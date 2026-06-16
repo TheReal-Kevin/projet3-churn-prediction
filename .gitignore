@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.installed.cfg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data — raw only (trop lourd pour git)
+data/raw/
+
+# Models binaires
+models/*.pkl
+models/*.joblib
+
+# Reports générés
+reports/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Livrable final
+*.zip
