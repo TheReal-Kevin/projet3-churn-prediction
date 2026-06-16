@@ -23,8 +23,10 @@ data/raw/
 models/*.pkl
 models/*.joblib
 
-# Reports générés
-reports/
+# Reports — ignorer les fichiers générés, garder la structure
+reports/figures/*.png
+reports/figures/*.jpg
+reports/figures/*.svg
 
 # IDE
 .vscode/
