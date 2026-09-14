@@ -58,12 +58,12 @@ Projet_3/
 | Modèle | AUC-ROC | F1-Score |
 |--------|---------|----------|
 | Régression Logistique | 0.84 | 0.61 |
-| Ridge Classifier | 0.83 | 0.59 |
-| Arbre de Décision | 0.73 | 0.55 |
-| Random Forest (optimisé) | 0.83 | 0.60 |
+| Ridge Classifier | 0.84 | 0.61 |
+| Arbre de Décision | 0.82 | 0.62 |
+| Random Forest (optimisé) | 0.83 | 0.56 |
 
-> Le modèle retenu est le **Random Forest optimisé** (GridSearchCV, StratifiedKFold 5 splits).  
-> Note : un surapprentissage est observé (F1 train = 0.98 vs F1 test = 0.61) — documenté dans `04_validation.ipynb`.
+> Le modèle retenu est le **Random Forest optimisé** (GridSearchCV, StratifiedKFold 5 splits) — meilleure précision (0.64) et meilleure accuracy (0.79), au prix d'un rappel plus faible (0.50) que les modèles linéaires.  
+> Note : un surapprentissage est observé (F1 train = 0.996 vs F1 test = 0.56) — documenté dans `04_validation.ipynb`.
 
 ---
 

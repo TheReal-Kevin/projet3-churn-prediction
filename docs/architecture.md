@@ -23,19 +23,19 @@ flowchart TD
 
     subgraph MODELS ["🤖 Modélisation — notebooks/03_models.ipynb"]
         E1["Régression Logistique\nAUC 0.84 · F1 0.61"]
-        E2["Ridge Classifier\nAUC 0.83 · F1 0.59"]
-        E3["Arbre de Décision\nAUC 0.73 · F1 0.55"]
-        E4["Random Forest\nAUC 0.82 · F1 0.58"]
+        E2["Ridge Classifier\nAUC 0.84 · F1 0.61"]
+        E3["Arbre de Décision\nAUC 0.82 · F1 0.62"]
+        E4["Random Forest\nAUC 0.82 · F1 0.55"]
     end
 
     subgraph OPTIM ["⚙️ Optimisation — GridSearchCV"]
         F["StratifiedKFold n=5\n24 combinaisons · 120 runs\nMétrique : F1-Score"]
     end
 
-    G["🏆 Random Forest Optimisé\nn_estimators=200 · max_depth=20\nAUC 0.83 · F1 0.60"]
+    G["🏆 Random Forest Optimisé\nn_estimators=200 · max_depth=20\nAUC 0.83 · F1 0.56"]
 
     subgraph VALID ["✅ Validation — notebooks/04_validation.ipynb"]
-        H1["Courbes d'apprentissage\nSurapprentissage détecté\nF1 train=0.98 vs test=0.61"]
+        H1["Courbes d'apprentissage\nSurapprentissage détecté\nF1 train=0.996 vs test=0.56"]
         H2["Monitoring Evidently\nData Drift : 0/4 colonnes\nPas de dérive détectée"]
     end
 
