@@ -37,4 +37,4 @@ jobs:
       # 5. Lancer toute la suite de tests (qualité de code + preprocessing +
       # modèle + API), plus seulement le linting.
       - name: Tests (preprocessing, modèle, API, qualité de code)
-        run: pytest tests/ -v
+        run: python -m pytest tests/ -v
