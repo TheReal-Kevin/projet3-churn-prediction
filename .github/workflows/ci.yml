@@ -1,4 +1,4 @@
-name: CI — Qualité du Code
+name: CI — Tests et Qualité du Code
 
 # Se déclenche à chaque push et pull request sur main et dev
 on:
@@ -28,6 +28,13 @@ jobs:
       - name: Installation des dépendances
         run: pip install -r requirements.txt
 
-      # 4. Lancer les tests de qualité du code
-      - name: Tests qualité (flake8 + black + pylint)
-        run: pytest tests/test_code_quality.py -v
+      # 4. Régénérer le modèle entraîné à partir du CSV nettoyé (versionné) —
+      # models/*.pkl est gitignoré (trop volumineux), donc absent après un clone.
+      # models/scaler.pkl est l'exception déjà committée (voir .gitignore).
+      - name: Entraînement du modèle
+        run: python src/save_model.py
+
+      # 5. Lancer toute la suite de tests (qualité de code + preprocessing +
+      # modèle + API), plus seulement le linting.
+      - name: Tests (preprocessing, modèle, API, qualité de code)
+        run: pytest tests/ -v
