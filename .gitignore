@@ -38,3 +38,8 @@ Thumbs.db
 
 # Livrable final
 *.zip
+
+# Documents internes — non destinés au dépôt Git
+docs/competences.md
+docs/generate_ppt.py
+docs/fiche_revision_code.md
