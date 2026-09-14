@@ -42,3 +42,6 @@ Thumbs.db
 
 # Livrable final
 *.zip
+
+# Fichiers temporaires Office (verrous PowerPoint/Word)
+~$*
