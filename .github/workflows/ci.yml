@@ -23,9 +23,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      # 3. Installer les dépendances du projet
+      # 3. Installer les dépendances du projet (nécessaire pour que pylint puisse
+      # résoudre les imports de pandas/scikit-learn/etc. dans src/)
       - name: Installation des dépendances
-        run: pip install flake8 black pylint pytest
+        run: pip install -r requirements.txt
 
       # 4. Lancer les tests de qualité du code
       - name: Tests qualité (flake8 + black + pylint)

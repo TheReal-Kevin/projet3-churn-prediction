@@ -2,6 +2,13 @@
 Script de sauvegarde du modèle final.
 À lancer une seule fois depuis la racine du projet :
     python src/save_model.py
+
+Note : ce script lit data/processed/cleaned_telco.csv, où les colonnes continues
+sont déjà normalisées. Le scaler utilisé pour cette normalisation (nécessaire à
+l'API pour transformer les nouvelles requêtes de la même façon) est fitté en amont,
+sur les données brutes (voir notebooks/01_preprocessing.ipynb), et committé
+directement dans models/scaler.pkl — il ne peut pas être régénéré ici sans le CSV
+brut, non versionné.
 """
 
 import pandas as pd
