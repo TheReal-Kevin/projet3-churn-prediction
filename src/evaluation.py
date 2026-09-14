@@ -1,4 +1,5 @@
-"""Model evaluation helpers: metrics, confusion matrix, ROC curve, feature importance."""
+"""Fonctions d'évaluation des modèles : métriques, matrice de confusion, courbe ROC,
+importance des features."""
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -14,7 +15,7 @@ from sklearn.metrics import (
 
 
 def print_metrics(y_true, y_pred, model_name: str = "Model") -> None:
-    """Print classification report."""
+    """Affiche le rapport de classification."""
     print(f"\n{'='*50}")
     print(f"  {model_name}")
     print(f"{'='*50}")
@@ -22,17 +23,19 @@ def print_metrics(y_true, y_pred, model_name: str = "Model") -> None:
 
 
 def plot_confusion_matrix(y_true, y_pred, model_name: str = "Model", ax=None) -> None:
-    """Plot a styled confusion matrix."""
+    """Affiche une matrice de confusion stylisée."""
     cm = confusion_matrix(y_true, y_pred)
     disp = ConfusionMatrixDisplay(cm, display_labels=["No Churn", "Churn"])
     disp.plot(ax=ax, colorbar=False, cmap="Blues")
+    # Fonctionne à la fois pour un graphique seul et pour une grille de sous-graphiques
+    # (quand un axe ax est fourni).
     (ax.set_title if ax else plt.title)(f"Confusion Matrix — {model_name}")
 
 
 def plot_roc_curves(models: dict, X_test, y_test) -> None:
     """
-    Plot ROC curves for multiple models on the same axes.
-    models: {name: fitted_estimator}
+    Trace les courbes ROC de plusieurs modèles sur le même graphique.
+    models: {nom: modèle_entraîné}
     """
     plt.figure(figsize=(8, 6))
     for name, model in models.items():
@@ -51,7 +54,7 @@ def plot_roc_curves(models: dict, X_test, y_test) -> None:
 
 
 def plot_feature_importance(model, feature_names: list, top_n: int = 15) -> None:
-    """Plot top N feature importances for tree-based models."""
+    """Affiche les N features les plus importantes pour un modèle à base d'arbres."""
     importances = model.feature_importances_
     indices = np.argsort(importances)[::-1][:top_n]
 
@@ -69,7 +72,8 @@ def plot_feature_importance(model, feature_names: list, top_n: int = 15) -> None
 
 def build_comparison_table(results: dict) -> pd.DataFrame:
     """
-    Build a comparison DataFrame.
-    results: {model_name: {"accuracy": ..., "precision": ..., "recall": ..., "f1": ..., "auc": ...}}
+    Construit un tableau comparatif des modèles.
+    results: {nom_du_modele: {"accuracy": ..., "precision": ..., "recall": ...,
+    "f1": ..., "auc": ...}}
     """
     return pd.DataFrame(results).T.round(4)
