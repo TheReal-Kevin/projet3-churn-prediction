@@ -32,10 +32,10 @@ flowchart TD
         F["StratifiedKFold n=5\n24 combinaisons · 120 runs\nMétrique : F1-Score"]
     end
 
-    G["🏆 Random Forest Optimisé\nn_estimators=200 · max_depth=20\nAUC 0.83 · F1 0.56"]
+    G["🏆 Random Forest Optimisé\nn_estimators=200 · max_depth=10\nAUC 0.84 · F1 0.62"]
 
     subgraph VALID ["✅ Validation — notebooks/04_validation.ipynb"]
-        H1["Courbes d'apprentissage\nSurapprentissage détecté\nF1 train=0.996 vs test=0.56"]
+        H1["Courbes d'apprentissage\nSurapprentissage détecté\nF1 train=0.77 vs test=0.62"]
         H2["Monitoring Evidently\nData Drift : 0/4 colonnes\nPas de dérive détectée"]
     end
 

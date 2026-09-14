@@ -27,11 +27,12 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # ── Entraînement du modèle final ────────────────────────────────────────────
-# Hyperparamètres retenus après GridSearchCV (notebook 03_models.ipynb).
-# class_weight="balanced" compense le déséquilibre des classes (~27 % de churn).
+# Hyperparamètres retenus après GridSearchCV (notebook 03_models.ipynb) :
+# max_depth=10 limite la profondeur des arbres et réduit nettement le surapprentissage.
+# class_weight="balanced" compense le déséquilibre des classes (environ 27 % de churn).
 modele = RandomForestClassifier(
     n_estimators=200,
-    max_depth=20,
+    max_depth=10,
     min_samples_split=2,
     min_samples_leaf=1,
     class_weight="balanced",

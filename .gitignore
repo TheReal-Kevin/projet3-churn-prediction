@@ -19,9 +19,13 @@ ENV/
 # Data — raw only (trop lourd pour git)
 data/raw/
 
-# Models binaires
+# Models binaires — trop lourds pour Git, régénérés par src/save_model.py
 models/*.pkl
 models/*.joblib
+# Exception : le scaler est petit et ne peut pas être régénéré sans le CSV brut
+# (non versionné) — on le committe directement pour que l'API fonctionne
+# immédiatement après un clone.
+!models/scaler.pkl
 
 # Reports — ignorer les fichiers générés, garder la structure
 reports/figures/*.png
@@ -38,8 +42,3 @@ Thumbs.db
 
 # Livrable final
 *.zip
-
-# Documents internes — non destinés au dépôt Git
-docs/competences.md
-docs/generate_ppt.py
-docs/fiche_revision_code.md

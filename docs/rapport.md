@@ -113,11 +113,11 @@ Deux features supplémentaires ont été implémentées dans `src/features.py`, 
 
 | Variante | Nb features | AUC-ROC | F1-score (test) | F1-score (train) |
 |---|---|---|---|---|
-| **Baseline (retenue)** | 30 | **0.8260** | **0.5586** | 0.9963 |
-| + `service_count` + `charge_per_month` | 32 | 0.8316 | 0.5588 | 0.996 |
-| + `service_count` seul | 31 | 0.8251 | 0.5498 | 0.9953 |
+| **Baseline (retenue)** | 30 | **0.8415** | **0.6191** | 0.7719 |
+| + `service_count` + `charge_per_month` | 32 | 0.8402 | 0.6259 | 0.7747 |
+| + `service_count` seul | 31 | 0.8424 | 0.6287 | 0.7689 |
 
-Aucune des deux variantes enrichies n'améliore le F1-score sur le jeu de test : avec les deux features, le score est identique (0.5588 contre 0.5586), et avec `service_count` seul il baisse légèrement (0.5498). Le surapprentissage reste au même niveau. À performance égale, je garde le modèle le plus simple (principe de parcimonie). `charge_per_month` est probablement redondante avec les variables déjà présentes (`tenure`, `MonthlyCharges`, `TotalCharges` sont mathématiquement liées), ce qui ajoute de la complexité sans apporter d'information réellement nouvelle au modèle.
+Les deux variantes enrichies n'apportent qu'un gain marginal de F1 sur le jeu de test (+0.007 avec les deux features, +0.010 avec `service_count` seul), du même ordre que la variabilité liée à un simple découpage train/test, et l'AUC ne bouge pas (0.84 dans les trois cas). À performance quasi égale, je garde le modèle le plus simple (principe de parcimonie) ; une validation croisée sur plusieurs découpages serait nécessaire avant de conclure à un vrai gain. `charge_per_month` est probablement redondante avec les variables déjà présentes (`tenure`, `MonthlyCharges`, `TotalCharges` sont mathématiquement liées), ce qui ajoute de la complexité sans apporter d'information réellement nouvelle au modèle.
 
 **Décision finale : ces deux features ne sont pas intégrées au modèle en production.** Le code reste disponible dans `src/features.py` à titre de piste explorée et documentée, plutôt que supprimé.
 
@@ -146,11 +146,11 @@ Tous les modèles ont été configurés avec `class_weight="balanced"` pour comp
 | Ridge Classifier | 0.84 | 0.61 | 0.50 | 0.79 |
 | Arbre de Décision (profondeur 4) | 0.82 | **0.62** | 0.51 | 0.78 |
 | Random Forest (base) | 0.82 | 0.55 | 0.64 | 0.49 |
-| **Random Forest (optimisé)** | 0.83 | 0.56 | **0.64** | 0.50 |
+| **Random Forest (optimisé, max_depth=10)** | **0.84** | **0.62** | 0.54 | 0.72 |
 
 *Valeurs issues des sorties du notebook `03_models.ipynb` (même split stratifié 80/20, `random_state=42`).*
 
-On observe deux profils de modèles : les modèles linéaires et l'arbre peu profond ont un **rappel élevé** (ils repèrent environ 78 % des churners) mais une **précision faible** (une alerte sur deux est fausse) ; le Random Forest fait l'inverse — **précision élevée** (0.64, moins de fausses alertes) mais **rappel plus faible** (il ne repère qu'un churner sur deux). L'optimisation par GridSearchCV n'apporte qu'un gain marginal sur le Random Forest de base (F1 0.5515 → 0.5586).
+On observe deux profils : le Random Forest de base (arbres non limités en profondeur) a une **précision élevée** (0.64) mais un **rappel faible** (0.49) et surapprend fortement ; les modèles linéaires, l'arbre peu profond et le Random Forest optimisé (`max_depth=10`) ont un **rappel élevé** (0.72 à 0.79) pour une précision autour de 0.50-0.54. L'optimisation par GridSearchCV transforme le Random Forest : F1 0.55 → 0.62 et rappel 0.49 → 0.72, ce qui en fait le meilleur modèle testé sur le F1, à égalité avec la régression logistique sur l'AUC (0.84).
 
 **Pourquoi l'AUC-ROC comme métrique principale ?**  
 L'AUC-ROC mesure la capacité du modèle à distinguer les churners des non-churners **quelle que soit le seuil de décision**. Dans un contexte métier, on peut ajuster ce seuil selon la tolérance au risque. Le F1-Score est suivi en complément car il prend en compte le déséquilibre de classes.
@@ -188,7 +188,7 @@ n_estimators=200, max_depth=10, min_samples_split=2, min_samples_leaf=1
 → F1 (validation croisée) = 0.634 ; F1 test = 0.62, rappel = 0.72
 ```
 
-**Point d'attention (honnêteté) :** le modèle final entraîné dans le notebook 04 et par `src/save_model.py` utilise `max_depth=20` au lieu du `max_depth=10` sélectionné par la recherche en grille. Cet écart explique une partie du surapprentissage observé (section 8.2) et le rappel plus faible du modèle déployé (0.50 contre 0.72). L'alignement du modèle déployé sur `max_depth=10` est la première correction à apporter.
+Ces hyperparamètres sont ceux du modèle final (notebook 04 et `src/save_model.py`). Lors de la relecture finale, j'ai constaté que le modèle déployé avait d'abord été entraîné avec `max_depth=20` (F1 test 0.56, rappel 0.50, F1 train 0.996) : je l'ai réaligné sur le résultat de la recherche en grille, ce qui améliore nettement la généralisation (F1 test 0.62, rappel 0.72, F1 train 0.77).
 
 ---
 
@@ -196,20 +196,19 @@ n_estimators=200, max_depth=10, min_samples_split=2, min_samples_leaf=1
 
 ### 8.1 Modèle retenu
 
-Le **Random Forest optimisé** a été retenu comme modèle final malgré un AUC (0.83 vs 0.84) et un F1 (0.56 vs 0.61) légèrement inférieurs à la régression logistique. Ce choix repose sur un compromis différent : le Random Forest a la meilleure précision (0.64 vs 0.51 — moins de fausses alertes pour l'équipe commerciale) et la meilleure accuracy (0.79), il capture des interactions non linéaires entre variables et fournit une importance des variables directement exploitable. En contrepartie, la régression logistique repère plus de churners (rappel 0.78 vs 0.50) et généralise mieux (pas de surapprentissage). Si l'objectif métier est de rater le moins de clients à risque possible, elle reste une alternative sérieuse — tout comme l'abaissement du seuil de décision du Random Forest.
+Le **Random Forest optimisé** (`max_depth=10`) est retenu comme modèle final : c'est le meilleur F1 des modèles testés (0.62), avec un AUC égal à celui de la régression logistique (0.84), un rappel de 0.72 (près de trois churners sur quatre repérés) et une précision de 0.54. Il capture des interactions non linéaires entre variables et fournit une importance des variables directement exploitable pour l'équipe commerciale. La régression logistique reste une alternative crédible (rappel 0.78, aucun surapprentissage) : les deux modèles sont proches, et le choix final dépend du coût métier relatif d'un départ non détecté et d'une fausse alerte.
 
 ### 8.2 Surapprentissage détecté
 
 | Métrique | Train | Test | Écart |
 |---|---|---|---|
-| Accuracy | 0.9980 | 0.7913 | 0.2067 |
-| F1-Score | 0.9963 | 0.5586 | **0.4377** |
+| F1-Score | 0.7719 | 0.6191 | **0.1528** |
 
-Un surapprentissage (overfitting) important est observé. Les courbes d'apprentissage (learning curves) confirment que le modèle mémorise les données d'entraînement plutôt que de généraliser.
+Un surapprentissage (overfitting) modéré subsiste — bien moindre qu'avec `max_depth=20` (écart de 0.44 sur le F1). Les courbes d'apprentissage (learning curves) montrent que les scores d'entraînement et de validation se rapprochent quand le volume de données augmente.
 
-**Causes probables :**
-- `max_depth=20` est très profond pour ce dataset
-- `min_samples_leaf=1` permet des feuilles avec un seul exemple
+**Causes probables de l'écart restant :**
+- `min_samples_leaf=1` permet encore des feuilles avec un seul exemple
+- 200 arbres de profondeur 10 restent un modèle très flexible pour 5 634 exemples
 
 **Pistes d'amélioration :**
 - Réduire `max_depth` (4 à 8)
@@ -301,7 +300,7 @@ Trois outils complémentaires assurent la qualité du code Python :
 
 ### Limites identifiées
 
-1. **Surapprentissage** : le modèle Random Forest mémorise trop les données d'entraînement (F1 train = 0.996 vs test = 0.56). Des hyperparamètres plus conservateurs réduiraient cet écart.
+1. **Surapprentissage résiduel** : le Random Forest reste un peu surajusté (F1 train = 0.77 vs test = 0.62). Des hyperparamètres plus conservateurs (`min_samples_leaf`, `max_depth` de 6 à 8) réduiraient encore cet écart.
 
 2. **Taille du dataset** : 7 043 exemples est relativement faible pour un modèle complexe. Davantage de données améliorerait la généralisation.
 
@@ -329,4 +328,4 @@ Ce projet a permis de construire un pipeline complet de Machine Learning, de la 
 5. **Déploiement** — API FastAPI + dashboard Dash interactif
 6. **CI/CD** — pipeline GitHub Actions automatisant les tests de qualité
 
-Le modèle retenu (Random Forest optimisé, AUC = 0.83, F1 = 0.56, précision = 0.64) est opérationnel et exposé via une API REST. Un surapprentissage a été identifié et documenté honnêtement — réduire la profondeur des arbres et augmenter le nombre minimum d'exemples par feuille sont les premières actions correctives à mener.
+Le modèle retenu (Random Forest optimisé, AUC = 0.84, F1 = 0.62, rappel = 0.72) est opérationnel et exposé via une API REST. Un surapprentissage a été identifié et documenté honnêtement — réduire la profondeur des arbres et augmenter le nombre minimum d'exemples par feuille sont les premières actions correctives à mener.
